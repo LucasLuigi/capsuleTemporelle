@@ -30,7 +30,6 @@ class dailyMode():
         # Current execution date is rebuilt without its hour:mn:s:ms attributes
         self.currentDate = datetime.date(
             year=now.year, month=now.month, day=now.day)
-        self.configParser['Last execution']['Date'] = str(self.currentDate)
 
         oneDayDelta = datetime.timedelta(days=1.0)
 
@@ -43,6 +42,8 @@ class dailyMode():
         else:
             print('>1')
             # TODO
+
+        self.configParser['Last execution']['Date'] = str(self.currentDate)
 
         with open(self.savedContextFile, 'w') as contextFile:
             self.configParser.write(contextFile)
