@@ -3,9 +3,6 @@
         "index": "1",
 		"file": "capsule.txt",
 		"creation_date": "2021-03-16",
-		"anniversaries": [
-			"6M",
-			"1Y"
-		]
+		"burying_time": "1A"
     }
 }
