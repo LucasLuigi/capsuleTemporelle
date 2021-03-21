@@ -58,7 +58,8 @@ class addMode():
         # Create folder(s) and store the file
         dirToStoreNewCapsule = 'capsules/'+str(self.savedCapsulesNb)
         os.mkdir(dirToStoreNewCapsule)
-        newCapsuleFile = shutil.copy(fileToAddPath, dirToStoreNewCapsule)
+        newCapsuleFile = shutil.copyfile(
+            fileToAddPath, dirToStoreNewCapsule+'/'+str(ntpath.basename(fileToAddPath)))
 
         # Set the new file as read only
         os.chmod(path=newCapsuleFile, mode=0o444)
@@ -69,13 +70,16 @@ class addMode():
                 'index': str(self.savedCapsulesNb),
                 'file': str(ntpath.basename(newCapsuleFile)),
                 'creation_date': str(self.currentDate),
-                'burying_time': buryingTime
+                'burying_time': {
+                    'value': buryingTimeValue[0],
+                    'unit': buryingTimeUnit[0]
+                }
             }
         }
 
         # Dump it into info.json
-        jsonDescrDump = json.dumps(jsonDescrDict, indent=4)
-        with open(dirToStoreNewCapsule+'/info.json', 'w') as jsonFile:
+        jsonDescrDump = json.dumps(jsonDescrDict, indent=4, ensure_ascii=False)
+        with open(dirToStoreNewCapsule+'/info.json', 'w', encoding='utf-8') as jsonFile:
             jsonFile.write(jsonDescrDump)
 
     def saveContextAndEnd(self):

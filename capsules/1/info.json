@@ -1,8 +1,11 @@
 {
     "capsule": {
         "index": "1",
-		"file": "capsule.txt",
-		"creation_date": "2021-03-16",
-		"burying_time": "1A"
+        "file": "capsule.txt",
+        "creation_date": "2021-03-21",
+        "burying_time": {
+            "value": "500",
+            "unit": "J"
+        }
     }
 }
