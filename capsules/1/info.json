@@ -1,7 +1,9 @@
 {
     "capsule": {
         "index": "1",
+        "owner_name": "Paul",
         "file": "capsule.txt",
+        "email": "example@email.com",
         "creation_date": "2021-03-21",
         "burying_time": {
             "value": "500",

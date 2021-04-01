@@ -4,6 +4,7 @@ import sys
 import configparser
 import datetime
 import json
+import yagmail
 
 from pathlib import Path
 
@@ -46,6 +47,77 @@ class dailyMode():
         self.currentDate = datetime.date(
             year=now.year, month=now.month, day=now.day)
 
+        # Parse the email used to send the reminders, store in another file for privacy reasons
+        with open('config_me_with_your_gmail_address.txt', 'r', encoding='utf-8') as configGmailFile:
+            self.GMAIL_SENDER_EMAIL = configGmailFile.read()
+            self.GMAIL_SENDER_EMAIL.strip(' .')
+        if self.GMAIL_SENDER_EMAIL == None:
+            print(
+                'ERREUR : Le fichier config_me_with_your_gmail_address est censé contenir votre adresse gmail et ce n\'est pas le cas\n')
+            # TODO Log in one log file?
+            sys.exit(-4)
+
+    def _sendEmail(self, executionDate, jsonDescrDict):
+        print('INFO : Envoi de l\'email d\'anniversaire\n')
+
+        # Extracting the useful infos from the json
+        receiver = jsonDescrDict['capsule']['email']
+
+        buryingPeriodComplete = jsonDescrDict['capsule']['burying_time']['value']
+
+        if jsonDescrDict['capsule']['burying_time']['unit'] == 'A':
+            buryingPeriodComplete = buryingPeriodComplete+' an'
+        elif jsonDescrDict['capsule']['burying_time']['unit'] == 'M':
+            buryingPeriodComplete = buryingPeriodComplete+' mois'
+        elif jsonDescrDict['capsule']['burying_time']['unit'] == 'J':
+            buryingPeriodComplete = buryingPeriodComplete+' jour'
+
+        if (int(jsonDescrDict['capsule']['burying_time']['value']) > 1) and jsonDescrDict['capsule']['burying_time']['unit'] != 'M':
+            buryingPeriodComplete = buryingPeriodComplete+'s'
+
+        buryingDate = datetime.date.fromisoformat(
+            jsonDescrDict['capsule']['creation_date'])
+
+        burrying_day = str(buryingDate.day)
+        if len(burrying_day) == 1:
+            burrying_day = '0'+burrying_day
+
+        burrying_month = str(buryingDate.month)
+        if len(burrying_month) == 1:
+            burrying_month = '0'+burrying_month
+
+        burrying_year = str(buryingDate.year)
+
+        buryingDateForTheMail = burrying_day + \
+            '/' + burrying_month + '/' + burrying_year
+
+        name = jsonDescrDict['capsule']['owner_name']
+
+        # Building the mail body from the template and above informations
+        with open('templates/mail_template.html', 'r', encoding='utf-8') as templateBody:
+            templateBodyContent = templateBody.read()
+
+        body = templateBodyContent.replace(
+            'SUBST_BURYING_PERIOD_COMPLETE', buryingPeriodComplete)
+        body = body.replace(
+            'SUBST_NAME', name)
+        body = body.replace('SUBST_BURYING_DATE', buryingDateForTheMail)
+
+        filename = 'capsules/' + \
+            jsonDescrDict['capsule']['index'] + \
+            '/'+jsonDescrDict['capsule']['file']
+
+        # Logging and sending the email with Yagmail
+        yag = yagmail.SMTP(
+            {self.GMAIL_SENDER_EMAIL: 'Capsule Temporelle'})
+        yag.send(
+            to=receiver,
+            subject='Une capsule temporelle a emmergé',
+            contents=body,
+            attachments=filename,
+            bcc=self.GMAIL_SENDER_EMAIL
+        )
+
     def _checkAnniversary(self, executionDate):
         for i in range(self.savedCapsulesNb):
             # i start from 0 and goes to savedCapsulesNb-1, but the actual existing capsules are in directories going from 1 to savedCapsulesNb
@@ -79,7 +151,7 @@ class dailyMode():
                     print('INFO : Date d\'enfouissement atteinte ('+str(jsonDescrDict['capsule']['burying_time']['value'])
                           + jsonDescrDict['capsule']['burying_time']['unit']+') pour '
                           + jsonDescrDict['capsule']['file'])
-                    # TODO
+                    self._sendEmail(executionDate, jsonDescrDict)
 
     def run(self):
         oneDayDelta = datetime.timedelta(days=1.0)

@@ -20,7 +20,7 @@ def firstExecution():
 
 
 if __name__ == '__main__':
-    print('- capsuleTemporelle- \n')
+    print('- capsuleTemporelle - \n')
 
     # Argument Parser         #
     ###########################
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
         # Save changed values offline to end the daily mode execution
         # COMMENTED FOR TEST PURPOSE ONLY
-        # dailyMode.saveContextAndEnd()
+        dailyMode.saveContextAndEnd()
     else:
         # Add mode                #
         ###########################
