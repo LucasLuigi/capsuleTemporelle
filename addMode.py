@@ -29,6 +29,9 @@ class addMode():
         self.savedCapsulesNb = int(self.configParser['Capsules']['saved'])
 
     def run(self):
+        # Variables
+        inputStripPattern = ' .-_,'
+
         # Input: file path
         fileToAddPath = input(
             '-Entrez le chemin du fichier à insérer dans la capsule. Il sera stocké dans les fichiers du programme :\n> ')
@@ -49,7 +52,7 @@ class addMode():
         # Input: burying time
         buryingTimeRaw = input(
             '-Entrez le temps d\'enfouissement de la capsule :\nFormat: 20J pour 20 jours, 6M pour 6 mois, 2A pour 2 ans...\n> ')
-        buryingTime = buryingTimeRaw.strip(' .-_,')
+        buryingTime = buryingTimeRaw.strip(inputStripPattern)
         buryingTimeValue = re.findall(r'^[0-9]+', buryingTime)
         buryingTimeUnit = re.findall(r'[JMA]$', buryingTime)
 
@@ -61,7 +64,7 @@ class addMode():
         # Input: name
         ownerName = input(
             '-Entrez votre prénom :\n> ')
-        ownerName = ownerName.strip(' .-_,')
+        ownerName = ownerName.strip(inputStripPattern)
 
         if len(ownerName) == 0:
             print('ERREUR : Le format du prénom n\'est pas correct.\n')
@@ -70,7 +73,7 @@ class addMode():
         # Input: email
         receiverEmail = input(
             '-Entrez l\'adresse email à laquelle sera envoyée l\'alerte après le temps d\'enfouissement :\n> ')
-        receiverEmail = receiverEmail.strip(' .-_,')
+        receiverEmail = receiverEmail.strip(inputStripPattern)
 
         if not re.search(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$', receiverEmail):
             print('ERREUR : Le format de ' + receiverEmail +
