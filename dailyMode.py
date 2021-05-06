@@ -156,16 +156,14 @@ class dailyMode():
     def run(self):
         oneDayDelta = datetime.timedelta(days=1.0)
         if(self.currentDate - self.latestDate < oneDayDelta):
-            print('<1')
+            print('INFO : Le mode journalier a déjà été exécuté aujourd\'hui.')
             # Nothing to do, the daily actions have already been executed today
         elif(self.currentDate - self.latestDate >= oneDayDelta):
-            print('>=1')
-
             # date object to iterate between the latest execution date+1 and today to execute the missed daily actions
             iterDate = self.latestDate + oneDayDelta
 
             while self.currentDate >= iterDate:
-                print(str(iterDate))
+                # print(str(iterDate))
                 self._checkAnniversary(iterDate)
 
                 iterDate = iterDate + oneDayDelta
