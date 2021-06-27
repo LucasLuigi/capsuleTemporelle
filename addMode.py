@@ -52,6 +52,7 @@ class addMode():
         # Input: burying time
         buryingTimeRaw = input(
             '-Entrez le temps d\'enfouissement de la capsule :\nFormat: 20J pour 20 jours, 6M pour 6 mois, 2A pour 2 ans...\n> ')
+        buryingTimeRaw = buryingTimeRaw.upper()
         buryingTime = buryingTimeRaw.strip(inputStripPattern)
         buryingTimeValue = re.findall(r'^[0-9]+', buryingTime)
         buryingTimeUnit = re.findall(r'[JMA]$', buryingTime)

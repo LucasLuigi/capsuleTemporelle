@@ -1,12 +1,17 @@
 # -*-coding: utf-8 -*
 
 import sys
+import os
+import time
 import configparser
 import datetime
 import json
 import yagmail
 
 from pathlib import Path
+
+MONTH_ARRAY = ['MONTH0', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai',
+               'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 
 
 class dailyMode():
@@ -54,10 +59,69 @@ class dailyMode():
         if self.GMAIL_SENDER_EMAIL == None:
             print(
                 'ERREUR : Le fichier config_me_with_your_gmail_address est censé contenir votre adresse gmail et ce n\'est pas le cas\n')
-            # TODO Log in one log file?
+            # TODO Log in on log file?
             sys.exit(-4)
 
-    def _sendEmail(self, executionDate, jsonDescrDict):
+    def _sendRecapMail(self):
+        print('INFO : Envoi de l\'email mensuel de récap\n')
+
+        identation = '                '
+
+        # Extracting the useful infos
+        currentMonth = MONTH_ARRAY[self.currentDate.month]
+        wd = os.getcwd()
+        capsulesFolderPath = wd + '\\capsules'
+
+        currentNbOfSavedCaps = 0
+        listOfCaps = ''
+        for capsuleFolder in os.scandir(capsulesFolderPath):
+            if capsuleFolder.is_dir():
+                currentNbOfSavedCaps += 1
+                jsonDescrPath = capsuleFolder.path + '\\info.json'
+                with open(jsonDescrPath, 'r', encoding='utf-8') as jsonDescrFile:
+                    jsonDescrFileContent = jsonDescrFile.read()
+                    jsonDescrDict = json.loads(jsonDescrFileContent)
+
+                listOfCaps = listOfCaps + identation+'<li>'
+                listOfCaps = listOfCaps + jsonDescrDict['capsule']['file']+' ajouté le '+jsonDescrDict['capsule']['creation_date'] + \
+                    ' par '+jsonDescrDict['capsule']['owner_name']+' pendant ' + \
+                    jsonDescrDict['capsule']['burying_time']['value']
+
+                if jsonDescrDict['capsule']['burying_time']['unit'] == 'A':
+                    listOfCaps = listOfCaps+' an'
+                elif jsonDescrDict['capsule']['burying_time']['unit'] == 'M':
+                    listOfCaps = listOfCaps+' mois'
+                elif jsonDescrDict['capsule']['burying_time']['unit'] == 'J':
+                    listOfCaps = listOfCaps+' jour'
+
+                if (int(jsonDescrDict['capsule']['burying_time']['value']) > 1) and jsonDescrDict['capsule']['burying_time']['unit'] != 'M':
+                    listOfCaps = listOfCaps+'s'
+
+                listOfCaps = listOfCaps + '.</li>\n'
+
+        # Building the mail body from the template and above informations
+        with open('templates/mail_template_recap.html', 'r', encoding='utf-8') as templateBody:
+            templateBodyContent = templateBody.read()
+
+        body = templateBodyContent.replace(
+            'MONTH', currentMonth)
+        body = body.replace(
+            'LAST_EXEC_DATE', self.configParser['Last execution']['date'])
+        body = body.replace('TOTAL_SAVED_CAPS',
+                            self.configParser['Capsules']['saved'])
+        body = body.replace('CURRENT_SAVED_CAPS', str(currentNbOfSavedCaps))
+        body = body.replace('LIST_OF_CAPS', listOfCaps)
+
+        # Logging and sending the email with Yagmail
+        yag = yagmail.SMTP(
+            {self.GMAIL_SENDER_EMAIL: 'Capsule Temporelle'})
+        yag.send(
+            to=self.GMAIL_SENDER_EMAIL,
+            subject='capsuleTemporelle - Récapitulatif du mois de '+currentMonth,
+            contents=body
+        )
+
+    def _sendAnniversaryEmail(self, executionDate, jsonDescrDict):
         print('INFO : Envoi de l\'email d\'anniversaire\n')
 
         # Extracting the useful infos from the json
@@ -151,7 +215,12 @@ class dailyMode():
                     print('INFO : Date d\'enfouissement atteinte ('+str(jsonDescrDict['capsule']['burying_time']['value'])
                           + jsonDescrDict['capsule']['burying_time']['unit']+') pour '
                           + jsonDescrDict['capsule']['file'])
-                    self._sendEmail(executionDate, jsonDescrDict)
+                    self._sendAnniversaryEmail(executionDate, jsonDescrDict)
+
+                    # Archive the capsule
+                    wd = os.getcwd()
+                    os.replace(wd+'\\capsules\\'+str(indexCapsule)+'\\',
+                               wd+'\\archives\\'+str(indexCapsule)+'\\')
 
     def run(self):
         oneDayDelta = datetime.timedelta(days=1.0)
@@ -163,7 +232,10 @@ class dailyMode():
             iterDate = self.latestDate + oneDayDelta
 
             while self.currentDate >= iterDate:
-                # print(str(iterDate))
+                # Recap mail
+                if iterDate.day == 1:
+                    self._sendRecapMail()
+
                 self._checkAnniversary(iterDate)
 
                 iterDate = iterDate + oneDayDelta

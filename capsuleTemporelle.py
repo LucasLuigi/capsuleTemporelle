@@ -15,8 +15,9 @@ def firstExecution():
     os.remove('saved_context.ini')
     # Init the offline context file
     copyfile('templates/saved_context.template', 'saved_context.ini')
-    # Create the storage folder. No error will be raised if the folder already exists
+    # Create the storage and archive folders. No error will be raised if the folder already exists
     os.makedirs('capsules', exist_ok=True)
+    os.makedirs('archives', exist_ok=True)
 
 
 if __name__ == '__main__':
@@ -38,7 +39,8 @@ if __name__ == '__main__':
     ###########################
     iniFile = Path('./saved_context.ini')
     capsulesFolder = Path('./capsules')
-    if not iniFile.is_file() or not capsulesFolder.is_dir():
+    archivesFolder = Path('./archives')
+    if not iniFile.is_file() or not capsulesFolder.is_dir() or not archivesFolder.is_dir():
         # Create .ini file in case of first execution
         firstExecution()
 
