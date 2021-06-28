@@ -17,7 +17,6 @@ def firstExecution():
     copyfile('templates/saved_context.template', 'saved_context.ini')
     # Create the storage and archive folders. No error will be raised if the folder already exists
     os.makedirs('capsules', exist_ok=True)
-    os.makedirs('archives', exist_ok=True)
 
 
 if __name__ == '__main__':
@@ -39,10 +38,14 @@ if __name__ == '__main__':
     ###########################
     iniFile = Path('./saved_context.ini')
     capsulesFolder = Path('./capsules')
-    archivesFolder = Path('./archives')
-    if not iniFile.is_file() or not capsulesFolder.is_dir() or not archivesFolder.is_dir():
+    if not iniFile.is_file() or not capsulesFolder.is_dir():
         # Create .ini file in case of first execution
         firstExecution()
+
+    # Archive folder: must be created if it has not been done before. Not just at first execution
+    archivesFolder = Path('./archives')
+    if not archivesFolder.is_dir():
+        os.makedirs('archives', exist_ok=True)
 
     # Daily mode              #
     ###########################
