@@ -28,6 +28,8 @@ if __name__ == '__main__':
         description='Gestionnaire de capsules temporelles')
     parser.add_argument('-d', action='store_true', dest='flagDaily',
                         help='Daily mode - Usage journalier pour vérifier l\'anniversaire des capsules existantes')
+    parser.add_argument('-r', action='store_true', dest='flagRecapMail',
+                        help='Recap mode - Provoque l\'envoi du mail de récap, disponible seulement avec l\'option -d')
     # parser.add_argument('--add', action='store', nargs='?', dest='fileToAdd',
     #                     help='Add - Ajoute un fichier a la capsule temporelle. Doit etre suivi du chemin du fichier')
     parser.add_argument('-a', action='store_true', dest='flagAdd',
@@ -51,7 +53,7 @@ if __name__ == '__main__':
     ###########################
     if args.flagDaily == True:
         # Daily mode init: Reading saved context file from previous execution
-        dailyMode = dailyMode()
+        dailyMode = dailyMode(args.flagRecapMail)
 
         # Run missed daily modes, including today's one
         dailyMode.run()

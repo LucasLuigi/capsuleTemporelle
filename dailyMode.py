@@ -10,14 +10,17 @@ import yagmail
 
 from pathlib import Path
 
-MONTH_ARRAY = ['MONTH0', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai',
-               'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
+MONTHS_ARRAY = ['MONTH0', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai',
+                'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 
 
 class dailyMode():
     # This class will parse the .ini config file
 
-    def __init__(self):
+    def __init__(self, triggerRecapMail):
+        # Argument: boolean
+        self.triggerRecapMail = triggerRecapMail
+
         # Reading the previously saved context
         self.savedContextFile = 'saved_context.ini'
         self.configParser = configparser.ConfigParser()
@@ -62,13 +65,16 @@ class dailyMode():
             # TODO Log in on log file?
             sys.exit(-4)
 
-    def _sendRecapMail(self):
-        print('INFO : Envoi de l\'email mensuel de récap\n')
+    def _sendRecapMail(self, hasBeenManuallyTriggered):
+        if hasBeenManuallyTriggered:
+            print('INFO : Envoi de l\'email de récap provoqué par l\'option -d\n')
+        else:
+            print('INFO : Envoi de l\'email mensuel de récap\n')
 
         identation = '                '
 
         # Extracting the useful infos
-        currentMonth = MONTH_ARRAY[self.currentDate.month]
+        currentMonth = MONTHS_ARRAY[self.currentDate.month]
         wd = os.getcwd()
         capsulesFolderPath = wd + '\\capsules'
 
@@ -223,6 +229,9 @@ class dailyMode():
                                wd+'\\archives\\'+str(indexCapsule)+'\\')
 
     def run(self):
+        if self.triggerRecapMail:
+            self._sendRecapMail(True)
+
         oneDayDelta = datetime.timedelta(days=1.0)
         if(self.currentDate - self.latestDate < oneDayDelta):
             print('INFO : Le mode journalier a déjà été exécuté aujourd\'hui.')
@@ -234,7 +243,7 @@ class dailyMode():
             while self.currentDate >= iterDate:
                 # Recap mail
                 if iterDate.day == 1:
-                    self._sendRecapMail()
+                    self._sendRecapMail(False)
 
                 self._checkAnniversary(iterDate)
 
