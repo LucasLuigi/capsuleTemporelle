@@ -67,7 +67,7 @@ class dailyMode():
 
     def _sendRecapMail(self, hasBeenManuallyTriggered):
         if hasBeenManuallyTriggered:
-            print('INFO : Envoi de l\'email de récap provoqué par l\'option -d\n')
+            print('INFO : Envoi de l\'email de récap provoqué par l\'option -r\n')
         else:
             print('INFO : Envoi de l\'email mensuel de récap\n')
 
